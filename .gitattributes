@@ -1,0 +1,7 @@
+# 天积安全 - Git 行尾规范化配置
+# Windows 批处理必须为 CRLF（cmd 解析 LF 行尾的中文注释行会异常），
+# 通过 eol=crlf 保证任何环境 clone 均得到 CRLF，不依赖各端 autocrlf 配置
+*.bat text eol=crlf
+*.cmd text eol=crlf
+# Shell 脚本保持 LF（Linux/macOS/GitBash 运行要求）
+*.sh text eol=lf

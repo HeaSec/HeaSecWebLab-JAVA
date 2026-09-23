@@ -1,0 +1,42 @@
+# ============================================================
+# HeaSec 靶场平台（JAVA版）.gitignore
+# ============================================================
+
+# ---- 通用 ----
+/node_modules/
+test/
+tmp/
+*.log
+nul
+.env
+.env.local
+
+# ---- IDE和编辑器 ----
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.claude/settings.local.json
+
+# ---- 操作系统 ----
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# ---- 前台门户（portal-java）构建与运行产物 ----
+portal-java/target/
+portal-java/logs/
+
+# ---- 商城系统综合实战JAVA版（shop_java）构建与运行产物 ----
+# Maven 构建产物（含可执行jar，由 mvn package 生成）
+range_java/pentest/shop_java/shop-java-backend/target/
+# 前端 npm 依赖与 Vite 构建产物（static 为集成到后端的最终产物，保留提交）
+range_java/pentest/shop_java/shop-java-frontend/node_modules/
+range_java/pentest/shop_java/shop-java-frontend/dist/
+# 运行时产物：日志目录/启动日志/上传目录（预置商品图在 resources/seed-images 中，启动时自动释放）
+range_java/pentest/shop_java/logs/
+range_java/pentest/shop_java/app.log
+range_java/pentest/shop_java/uploads/

@@ -1,0 +1,92 @@
+# HeaSec 天积安全靶场 — Docker Compose 编排
+# 版本：v4.0.0 | 三服务（mysql:5.7 + JAVA前台门户 + 商城JAVA版靶场）
+# 前台门户：http://localhost:8080  商城靶场：http://localhost:8081
+
+services:
+  db:
+    platform: linux/amd64
+    image: mysql:5.7
+    container_name: heasec-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    command:
+      - --lower_case_table_names=1
+      - --sql_mode=IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+      - --default-storage-engine=MyISAM
+      - --character-set-server=utf8
+      - --collation-server=utf8_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max-allowed-packet=16M
+    volumes:
+      - heasec_mysql_data:/var/lib/mysql
+    networks:
+      - heasec-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-proot", "-h", "127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # 靶场平台前台门户（JAVA版）：Spring Boot 纯静态导航，无数据库依赖
+  portal-java:
+    platform: linux/amd64
+    build:
+      context: ./portal-java
+      dockerfile: Dockerfile
+    image: heasec/portal-java:4.0.0
+    container_name: heasec-portal-java
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - heasec-net
+    healthcheck:                          # 基础镜像无 curl，用 bash /dev/tcp 探测端口
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # 商城系统综合实战靶场（JAVA版）：Spring Boot 3.2 内嵌 Tomcat
+  # 容器内多阶段构建完成 Maven 编译；复用同一 MySQL 实例
+  # （shop_java 独立库，应用启动时自动建库建表并初始化种子数据）
+  shop-java:
+    platform: linux/amd64
+    build:
+      context: ./range_java/pentest/shop_java
+      dockerfile: Dockerfile
+    image: heasec/shop-java:1.1.0
+    container_name: heasec-shop-java
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/shop_java?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai"
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    volumes:
+      - shop-java-uploads:/app/uploads   # 商品图片上传目录（预置图启动时自动释放）
+      - shop-java-logs:/app/logs         # log4j2 文件日志
+    networks:
+      - heasec-net
+    healthcheck:                          # 基础镜像无 curl，用 bash /dev/tcp 探测端口
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+volumes:
+  heasec_mysql_data:
+  shop-java-uploads:
+  shop-java-logs:
+
+networks:
+  heasec-net:
