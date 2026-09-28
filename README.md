@@ -1,5 +1,13 @@
 <div align="center">
 
+# 天积安全 WEB 靶场平台（JAVA版）
+
+[![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
+[![Gitee](https://img.shields.io/badge/Gitee-HeaSec-C71D23?logo=gitee&logoColor=white)](https://gitee.com/HeaSec/)
+[![GitHub](https://img.shields.io/badge/GitHub-HeaSec-181717?logo=github&logoColor=white)](https://github.com/HeaSec/)
+
+</div>
+
 ---
 
 ## 简介
@@ -8,14 +16,14 @@
 
 本分支由两个独立的 Spring Boot 服务组成：
 
-| 服务                                        | 说明                                                                                                                                                                                            | 目录                              |    默认端口    |
-| :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------- | :------------: |
-| **前台门户**（portal-java）           | 靶场导航门户（Vue 2 SPA，UI 沿用平台经典视觉），展示"综合实战"分类与靶场卡片，学习状态保存在浏览器本地                                                                                          | `portal-java/`                  | **8080** |
-| **商城系统综合实战靶场**（shop-java） | Spring Boot 3.2 + Vue 3 前后端分离的综合实战商城靶场，基于 PHP 版升级：保留业务逻辑、输入验证等原有漏洞，新增 Actuator 未授权 / Log4Shell / XXE / Fastjson 反序列化 / SpEL 注入等 Java 特有漏洞 | `range_java/pentest/shop_java/` | **8081** |
+| 服务 | 说明 | 目录 | 默认端口 |
+| :--- | :--- | :--- | :---: |
+| **前台门户**（portal-java） | 靶场导航门户（Vue 2 SPA，UI 沿用平台经典视觉），展示"综合实战"分类与靶场卡片 | `portal-java/` | **8080** |
+| **商城系统综合实战靶场**（shop-java） | Spring Boot 3.2 + Vue 3 前后端分离的综合实战商城靶场 | `range_java/pentest/shop_java/` | **8081** |
 
 前台门户为纯静态导航（无数据库依赖，启动即用）；商城靶场使用独立数据库 `shop_java`（表前缀 `heasec_shop_`），应用启动时自动建库建表并初始化种子数据。
 
-商城系统综合实战靶场由平台 PHP 版同名靶场升级而来，在保留原有功能和漏洞的基础上新增了 Java 相关安全漏洞，漏洞积分上限从 4800 分提升至 6000 分（2000/4000/6000 分对应 1/2/3 星）。
+商城系统综合实战靶场由平台 PHP 版同名靶场升级而来：保留业务逻辑、输入验证等原有漏洞，新增多个 Java 特有漏洞；漏洞积分上限从 4800 分提升至 6000 分（2000/4000/6000 分对应 1/2/3 星）。
 
 ## 快速部署
 
@@ -23,13 +31,13 @@
 
 ### 环境要求
 
-|   组件   | 要求                                                                                                         |
-| :------: | :----------------------------------------------------------------------------------------------------------- |
-|   JDK   | 17+（Spring Boot 3.2 最低要求，请正确配置`JAVA_HOME`）                                                     |
-|  Maven  | 3.6+（仅本地源码启动需要；也可使用根目录脚本自动探测 Maven Wrapper 缓存）                                    |
-|  MySQL  | 5.7+（仅商城靶场需要；本地部署需自行额外部署，**推荐使用 phpstudy 自带的数据库**，账号默认 root/root） |
-| Node.js | 18+（仅修改商城前端源码时需要，前端构建产物已随仓库提交）                                                    |
-| 操作系统 | Windows / Linux / macOS                                                                                      |
+| 组件 | 要求 |
+| :--: | :--- |
+| JDK | 17+（Spring Boot 3.2 最低要求，需正确配置 `JAVA_HOME`） |
+| Maven | 3.6+（仅本地源码启动需要） |
+| MySQL | 5.7+（仅商城靶场需要，本地部署**推荐使用 phpstudy 自带数据库**，默认账号 root/root） |
+| Node.js | 18+（仅修改商城前端源码时需要，前端构建产物已随仓库提交） |
+| 操作系统 | Windows / Linux / macOS |
 
 ### Docker 部署（推荐）
 
@@ -89,24 +97,44 @@ java --add-opens java.base/java.lang=ALL-UNNAMED -jar shop-java-backend.jar --se
 
 > 本方式**从源码构建并启动**，要求本地具备**打包环境**：**JDK 17+ 与 Maven 3.6+**（见上方环境要求；Maven 未加入 PATH 时，脚本会自动探测 Maven Wrapper 缓存）。若不想配置打包环境，请使用上方 Docker 部署或 JAR 包部署。
 
-在项目根目录执行：
+拉取代码后，在项目根目录**直接运行启动脚本即可，无需先手动编译**——脚本内置自动构建检测，jar 缺失或源码有更新时会自动重新打包再启动：
 
 ```bash
-# 方式一：Windows
-build.bat              # 编译全部（可选参数 all / portal / shop）
-start.bat              # 启动全部服务（可选参数 all / portal / shop）
+# Windows
+start.bat              # 自动打包并启动全部服务（默认）
+start.bat portal       # 仅启动前台门户（8080）
+start.bat shop         # 仅启动商城靶场（8081）
 
-# 方式二：Linux / macOS / GitBash
-./build.sh             # 编译全部
-./start.sh             # 后台启动全部服务
-./stop.sh              # 停止后台服务（可选参数 all / portal / shop）
+# Linux / macOS / GitBash
+./start.sh             # 自动打包并后台启动全部服务（默认）
+./start.sh portal      # 仅启动前台门户（8080）
+./start.sh shop        # 仅启动商城靶场（8081）
 ```
 
-- `start` 脚本内置**自动构建检测**：jar 缺失或源码有更新时自动重新打包，拉取代码后直接运行即可
 - **本地部署需自行额外部署 MySQL 数据库服务**（Docker 部署由容器编排自动提供），**推荐直接使用 phpstudy 自带的数据库**——在小皮面板中启动 MySQL 即可；请确保账号密码与靶场配置一致（默认 `root/root`，不一致时修改 `shop-java-backend/src/main/resources/application.yml` 数据源配置），库和表无需手动创建，首次启动自动初始化
 - Windows 下每个服务在独立命令行窗口运行（关闭窗口即停止）；Linux 下后台运行（PID 与日志见各自 `logs/` 目录）
 - 启动后访问：前台门户 `http://localhost:8080/`，商城靶场 `http://localhost:8081/`
 - 商城靶场以 `range_java/pentest/shop_java` 为工作目录启动（`database/init_database.sql` 按工作目录优先读取），由根级脚本自动保证
+
+<details>
+<summary>📖 备用脚本（手动编译 / 停止服务）</summary>
+
+`build` 脚本仅手动编译打包（不启动），通常无需单独执行——`start` 脚本会按需自动构建：
+
+```bash
+# 手动编译（参数含义同 start：不写默认编译全部）
+build.bat              # Windows：编译全部
+./build.sh             # Linux / macOS / GitBash：编译全部
+./build.sh shop        # 示例：仅编译商城靶场
+
+# 停止后台服务（Linux / macOS / GitBash，参数含义同上）
+./stop.sh              # 停止全部后台服务
+./stop.sh shop         # 仅停止商城靶场
+```
+
+Windows 下停止服务直接关闭对应服务的命令行窗口即可（仓库无 stop.bat）。
+
+</details>
 
 <details>
 <summary>📖 手动源码启动（不使用脚本）</summary>
@@ -151,7 +179,7 @@ heasecdev/
 
 ## 开源许可证
 
-[![License: GPL v3](<https://img.shields.io/badge/License-GPL%20v3-blue.svg>)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 
 本项目基于 [GNU General Public License v3.0](LICENSE) 协议开源。
 
